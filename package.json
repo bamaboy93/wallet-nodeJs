@@ -1,7 +1,8 @@
 {
-  "name": "template",
-  "version": "0.0.0",
-  "private": true,
+  "name": "wallet",
+  "version": "1.0.0",
+  "main": "app.js",
+  "license": "ISC",
   "scripts": {
     "start": "cross-env NODE_ENV=production node ./server.js",
     "start:dev": "cross-env NODE_ENV=development nodemon ./server.js",
@@ -9,10 +10,32 @@
     "lint:fix": "eslint --fix **/*.js"
   },
   "dependencies": {
-    "cors": "2.8.5",
-    "cross-env": "7.0.3",
-    "express": "4.17.1",
-    "morgan": "1.10.0"
+    "@sendgrid/mail": "^7.6.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.28.1",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "dotenv": "^15.0.0",
+    "express": "^4.17.1",
+    "express-query-boolean": "^2.0.0",
+    "express-rate-limit": "^6.2.0",
+    "express-session": "^1.17.2",
+    "gravatar": "^1.8.2",
+    "helmet": "^5.0.2",
+    "jimp": "^0.16.1",
+    "joi": "^17.6.0",
+    "joi-objectid": "^4.0.2",
+    "jsonwebtoken": "^8.5.1",
+    "mailgen": "^2.0.16",
+    "mkdirp": "^1.0.4",
+    "mongoose": "^6.1.9",
+    "mongoose-paginate-v2": "^1.5.0",
+    "morgan": "1.10.0",
+    "multer": "^1.4.4",
+    "nodemailer": "^6.7.2",
+    "passport": "^0.5.2",
+    "passport-jwt": "^4.0.0",
+    "swagger-ui-express": "^4.3.0"
   },
   "devDependencies": {
     "eslint": "7.19.0",
@@ -22,5 +45,17 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "5.2.0",
     "nodemon": "2.0.15"
-  }
-}
+  },
+  
+  "bin": {
+    "wallet": "bin/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bamaboy93/wallet-nodeJs.git"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/bamaboy93/wallet-nodeJs/issues"
+  }}
+  

@@ -1,1 +1,5 @@
 node_modules
+.env
+upload
+user-avatars
+package-lock.json
