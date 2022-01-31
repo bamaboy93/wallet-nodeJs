@@ -4,8 +4,8 @@
   "main": "app.js",
   "license": "ISC",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node ./server.js",
-    "start:dev": "cross-env NODE_ENV=development nodemon ./server.js",
+    "start": "cross-env NODE_ENV=production node ./bin/server.js",
+    "start:dev": "cross-env NODE_ENV=development nodemon ./bin/server.js",
     "lint": "eslint **/*.js",
     "lint:fix": "eslint --fix **/*.js"
   },
@@ -46,7 +46,6 @@
     "eslint-plugin-promise": "5.2.0",
     "nodemon": "2.0.15"
   },
-  
   "bin": {
     "wallet": "bin/server.js"
   },
@@ -57,5 +56,5 @@
   "author": "",
   "bugs": {
     "url": "https://github.com/bamaboy93/wallet-nodeJs/issues"
-  }}
-  
+  }
+}
