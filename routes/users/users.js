@@ -8,7 +8,7 @@ const {
   uploadAvatar,
   verifyUser,
   repeatEmailForVerifyUser,
-  updateUser,
+  current,
   // loginByGoogle,
 } = require("../../controllers/users/users");
 const {
@@ -35,7 +35,7 @@ router.patch(
   upload.single("avatar"),
   wrapError(uploadAvatar)
 );
-
+router.get("/current", guard, wrapError(current));
 router.get("/verify/:token", wrapError(verifyUser));
 router.post("/verify", repeatEmailForVerifyUser);
 

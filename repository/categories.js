@@ -1,18 +1,10 @@
-const Category = require("../models/category");
+const { Category } = require("../config/category");
 
-const listCategories = async () => {
-  const results = await Category.find({});
-
-  return results;
-};
-
-const getCategoryById = async (categoryId) => {
-  const result = await Category.findById(categoryId);
-
-  return result;
+const getAllCategories = () => {
+  const data = Category.expenses;
+  return data;
 };
 
 module.exports = {
-  listCategories,
-  getCategoryById,
+  getAllCategories,
 };

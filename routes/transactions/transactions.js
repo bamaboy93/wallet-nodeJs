@@ -1,25 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const {
-  getTransactions,
-  makeTransaction,
-  removeTransaction,
-  updateTransaction,
-  getTransactionStats,
+  getAllTransactions,
+  addTransaction,
+  editTransactionById,
+  deleteTransactionById,
+  getStatisticsByMonth,
 } = require("../../controllers/transactions/transactions");
-const { validateMakeTransaction } = require("./validation");
+
 const guard = require("../../helpers/guard");
 
 const wrapError = require("../../helpers/errorHandler");
 
-router.get("/", guard, wrapError(getTransactions));
+router.get("/", guard, wrapError(getAllTransactions));
 
-router.post("/", guard, validateMakeTransaction, wrapError(makeTransaction));
+router.post("/", guard, wrapError(addTransaction));
 
-router.delete("/:transactionId", guard, wrapError(removeTransaction));
+router.get("/statistics/", guard, getStatisticsByMonth);
 
-router.patch("/:transactionId", guard, wrapError(updateTransaction));
+router.patch("/:transactionId", guard, wrapError(editTransactionById));
 
-router.get("/stats", guard, wrapError(getTransactionStats));
+router.delete("/:transactionId", guard, wrapError(deleteTransactionById));
 
 module.exports = router;

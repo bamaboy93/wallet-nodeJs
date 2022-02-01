@@ -22,7 +22,10 @@
       "description": "Category endpoints"
     }
   ],
-  "servers": [{ "url": "http://localhost:5500" }],
+  "servers": [
+    { "url": "https://git.heroku.com/wallet-nodeJs.git" },
+    { "url": "http://localhost:5500" }
+  ],
 
   "paths": {
     "/api/users/signup": {
@@ -38,17 +41,17 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "example": "example@email.com",
+                    "example": "your@email.com",
                     "description": "Email"
                   },
                   "password": {
                     "type": "string",
-                    "example": "password123",
+                    "example": "qwerty123",
                     "description": "Password"
                   },
                   "name": {
                     "type": "string",
-                    "example": "My Name",
+                    "example": "Your Name",
                     "description": "Name"
                   }
                 }
@@ -164,12 +167,12 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "example": "example@email.com",
+                    "example": "your@email.com",
                     "description": "Email"
                   },
                   "password": {
                     "type": "string",
-                    "example": "password123",
+                    "example": "qwwerty123",
                     "description": "Password"
                   }
                 }
@@ -456,36 +459,12 @@
         }
       }
     },
-
-    "/api/users": {
-      "patch": {
+    "/api/users/current": {
+      "get": {
         "tags": ["Users"],
-        "summary": "Update user data",
-        "parameters": [],
+        "summary": "Get current user",
         "security": [{ "Bearer": [] }],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "My New Name",
-                    "description": "name"
-                  },
-                  "email": {
-                    "type": "string",
-                    "example": "newexample@email.com",
-                    "description": "email"
-                  }
-                }
-              }
-            }
-          }
-        },
-
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -504,44 +483,23 @@
                       "description": "response code",
                       "example": "200"
                     },
+                    "message": {
+                      "type": "number",
+                      "description": "response message",
+                      "example": "Current user"
+                    },
                     "data": {
                       "type": "object",
                       "description": "response data",
                       "example": {
-                        "email": "example@email.com",
-                        "name": "My Name",
-                        "balance": 10000,
-
-                        "avatar": "https://path/to/avatar"
+                        "user": {
+                          "id": "id-123-qwe-456-rty",
+                          "email": "example@email.com",
+                          "name": "My Name",
+                          "balance": 10000,
+                          "avatar": "https://path/to/avatar"
+                        }
                       }
-                    }
-                  }
-                }
-              }
-            }
-          },
-
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "400"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Error message"
                     }
                   }
                 }
@@ -575,39 +533,10 @@
                 }
               }
             }
-          },
-
-          "409": {
-            "description": "Conflict (email is already in use)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "409"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Email is already in use"
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }
     },
-
     "/api/users/avatar": {
       "patch": {
         "tags": ["Users"],
@@ -660,108 +589,36 @@
       }
     },
 
-    "/api/transactions": {
+    "/transactions/all": {
       "get": {
         "tags": ["Transactions"],
-        "summary": "Get list of user transactions",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "limit of transactions per page",
-            "required": false,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "number of pages for transactions output",
-            "required": false,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "sortBy",
-            "in": "query",
-            "description": "fields for ascending sorting separated by '|'",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortByDesc",
-            "in": "query",
-            "description": "fields for ascending sorting separated by '|'",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "Get all transactions",
+        "parameters": [],
         "security": [{ "Bearer": [] }],
-
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
+                  "description": "success",
                   "type": "object",
                   "properties": {
                     "status": {
                       "type": "string",
-                      "description": "response status",
+                      "description": "responses status",
                       "example": "success"
                     },
                     "code": {
-                      "type": "number",
-                      "description": "response code",
+                      "type": "string",
+                      "description": "responses code",
                       "example": "200"
                     },
                     "data": {
                       "type": "object",
-                      "description": "response data",
+                      "description": "responses data",
                       "example": {
-                        "years": [2019, 2020, 2021],
-                        "transactions": [
-                          {
-                            "date": "2021-01-01T22:00:00.000Z",
-                            "month": 1,
-                            "year": 2021,
-                            "isExpense": true,
-                            "category": {
-                              "name": "Категория 1",
-                              "color": "#0088ff",
-                              "id": "categoryID_123-456-789"
-                            },
-                            "comment": "Транзакция 1",
-                            "amount": 10000,
-                            "balanceAfter": 90000,
-                            "owner": "userID_123-456-789",
-                            "createdAt": "2021-11-19T23:54:10.634Z",
-                            "updatedAt": "2021-11-20T01:29:37.678Z",
-                            "type": "-",
-                            "date_str": "01.01.21",
-                            "id": "transationID_123-456-789"
-                          },
-                          { "...": "..." },
-                          { "...": "..." }
-                        ],
-                        "pageInfo": {
-                          "totalDocs": 20,
-                          "limit": 5,
-                          "totalPages": 4,
-                          "page": 2,
-                          "pagingCounter": 6,
-                          "hasPrevPage": true,
-                          "hasNextPage": true,
-                          "prevPage": 1,
-                          "nextPage": 3
-                        }
+                        "totalBalance": 1000
                       }
                     }
                   }
@@ -769,74 +626,83 @@
               }
             }
           },
-
-          "401": {
-            "description": "Unauthorized",
+          "403": {
+            "description": "Forbidden",
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "description": "responses status",
+                "example": "error"
+              },
+              "code": {
+                "type": "string",
+                "description": "responses code",
+                "example": "403"
+              },
+              "message": {
+                "type": "string",
+                "description": "responses message",
+                "example": "Access denied"
+              }
+            }
+          },
+          "500": {
+            "description": "Iternal ServerError",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "401"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Invalid credentials"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Error500"
                 }
               }
             }
           }
         }
-      },
+      }
+    },
 
+    "/transactions/new": {
       "post": {
         "tags": ["Transactions"],
-        "summary": "Add new transaction",
+        "summary": "Create new transaction",
         "security": [{ "Bearer": [] }],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["date", "category", "comment", "amount"],
+                "required": ["date", "category", "amount", "type"],
                 "properties": {
                   "date": {
-                    "type": "date",
-                    "example": "2021-11-12T22:00:00.000Z",
+                    "type": "string",
+                    "example": "Sat Nov 13 2021 12:51:02",
                     "description": "date"
                   },
                   "category": {
                     "type": "string",
-                    "example": "categoryID_123-456-789",
-                    "description": "category ID"
+                    "example": "present",
+                    "description": "category"
                   },
-                  "comment": {
+                  "comments": {
                     "type": "string",
-                    "example": "Transaction 1",
+                    "example": "grandma's present",
                     "description": "comments"
                   },
                   "amount": {
                     "type": "number",
                     "example": 10000,
                     "description": "amount"
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "income",
+                    "description": "type"
                   }
                 }
               }
             }
           }
         },
-
         "responses": {
           "201": {
             "description": "Success",
@@ -857,337 +723,16 @@
                     },
                     "data": {
                       "type": "object",
-                      "description": "response data",
-                      "example": {
-                        "balance": 20000,
-                        "transactions": [
-                          {
-                            "date": "2021-01-01T22:00:00.000Z",
-                            "month": 1,
-                            "year": 2021,
-                            "isExpense": true,
-                            "category": {
-                              "name": "Категория 1",
-                              "color": "#0088ff",
-                              "id": "categoryID_123-456-789"
-                            },
-                            "comment": "Транзакция 1",
-                            "amount": 10000,
-                            "balanceAfter": 90000,
-                            "owner": "userID_123-456-789",
-                            "createdAt": "2021-11-19T23:54:10.634Z",
-                            "updatedAt": "2021-11-20T01:29:37.678Z",
-                            "type": "-",
-                            "date_str": "01.01.21",
-                            "id": "transationID_123-456-789"
-                          },
-                          { "...": "..." },
-                          { "...": "..." }
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "400"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Error message"
-                    }
-                  }
-                }
-              }
-            }
-          },
-
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "401"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Invalid credentials"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-
-    "/api/transactions/{transactionId}": {
-      "patch": {
-        "tags": ["Transactions"],
-        "summary": "Update user transactions",
-        "parameters": [
-          {
-            "name": "transactionId",
-            "in": "path",
-            "description": "transaction ID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [{ "Bearer": [] }],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [],
-                "properties": {
-                  "date": {
-                    "type": "date",
-                    "example": "2021-11-12T22:00:00.000Z",
-                    "description": "date"
-                  },
-                  "category": {
-                    "type": "string",
-                    "example": "categoryID_123-456-789",
-                    "description": "category ID"
-                  },
-                  "comment": {
-                    "type": "string",
-                    "example": "Transaction 1",
-                    "description": "comments"
-                  },
-                  "amount": {
-                    "type": "number",
-                    "example": 10000,
-                    "description": "amount"
-                  }
-                }
-              }
-            }
-          }
-        },
-
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "responses status",
-                      "example": "success"
-                    },
-                    "code": {
-                      "type": "string",
-                      "description": "responses code",
-                      "example": "200"
-                    },
-                    "data": {
-                      "type": "object",
                       "description": "responses data",
                       "example": {
-                        "balance": 20000,
-                        "transactions": [
-                          {
-                            "date": "2021-01-01T22:00:00.000Z",
-                            "month": 1,
-                            "year": 2021,
-                            "isExpense": true,
-                            "category": {
-                              "name": "Категория 1",
-                              "color": "#0088ff",
-                              "id": "categoryID_123-456-789"
-                            },
-                            "comment": "Транзакция 1",
-                            "amount": 10000,
-                            "balanceAfter": 90000,
-                            "owner": "userID_123-456-789",
-                            "createdAt": "2021-11-19T23:54:10.634Z",
-                            "updatedAt": "2021-11-20T01:29:37.678Z",
-                            "type": "-",
-                            "date_str": "01.01.21",
-                            "id": "transationID_123-456-789"
-                          },
-                          { "...": "..." },
-                          { "...": "..." }
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "400"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Error message"
-                    }
-                  }
-                }
-              }
-            }
-          },
-
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "401"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Invalid credentials"
-                    }
-                  }
-                }
-              }
-            }
-          },
-
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error 404"
-                }
-              }
-            }
-          }
-        }
-      },
-
-      "delete": {
-        "tags": ["Transactions"],
-        "summary": "Delete transaction",
-        "parameters": [
-          {
-            "name": "transactionId",
-            "in": "path",
-            "description": "transaction Id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [{ "Bearer": [] }],
-
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "responses status",
-                      "example": "success"
-                    },
-                    "code": {
-                      "type": "string",
-                      "description": "responses code",
-                      "example": "200"
-                    },
-                    "data": {
-                      "type": "object",
-                      "description": "responses data",
-                      "example": {
-                        "balance": 20000,
-                        "deleted": {
-                          "date": "2021-01-01T22:00:00.000Z",
-                          "month": 1,
-                          "year": 2021,
-                          "isExpense": true,
-                          "category": {
-                            "name": "Категория 1",
-                            "color": "#0088ff",
-                            "id": "categoryID_123-456-789"
-                          },
-                          "comment": "Транзакция 1",
-                          "amount": 10000,
-                          "balanceAfter": 90000,
-                          "owner": "userID_123-456-789",
-                          "createdAt": "2021-11-19T23:54:10.634Z",
-                          "updatedAt": "2021-11-20T01:29:37.678Z",
-                          "type": "-",
-                          "date_str": "01.01.21",
-                          "id": "transationID_123-456-789"
+                        "newTransaction": {
+                          "date": "Sat Nov 13 2021 12:51:02",
+                          "type": "income",
+                          "category": "gift",
+                          "comments": "love my Granny",
+                          "amount": 10000
                         },
-                        "transactions": [
-                          { "...": "..." },
-                          { "...": "..." },
-                          { "...": "..." }
-                        ]
+                        "totalBalance": 11000
                       }
                     }
                   }
@@ -1196,40 +741,12 @@
             }
           },
 
-          "401": {
-            "description": "Unauthorized",
+          "500": {
+            "description": "Iternal Server Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "401"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Invalid credentials"
-                    }
-                  }
-                }
-              }
-            }
-          },
-
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error 404"
+                  "$ref": "#/components/schemas/Error500"
                 }
               }
             }
@@ -1238,32 +755,31 @@
       }
     },
 
-    "/api/transactions/stats": {
+    "/transactions/statistics/{month}/{year}": {
       "get": {
         "tags": ["Transactions"],
-        "summary": "Get user transaction monthly or yearly statistics",
+        "summary": "Get statistic",
         "security": [{ "Bearer": [] }],
         "parameters": [
           {
             "name": "month",
-            "in": "query",
-            "description": "choose month for stats info",
-            "required": false,
+            "in": "path",
+            "description": "month request",
+            "required": "true",
             "schema": {
               "type": "string"
             }
           },
           {
             "name": "year",
-            "in": "query",
-            "description": "choose month for stats info",
-            "required": false,
+            "in": "path",
+            "description": "year request",
+            "required": "true",
             "schema": {
               "type": "string"
             }
           }
         ],
-
         "responses": {
           "200": {
             "description": "Success",
@@ -1274,34 +790,38 @@
                   "properties": {
                     "status": {
                       "type": "string",
-                      "description": "response status",
+                      "description": "responses status",
                       "example": "success"
                     },
                     "code": {
-                      "type": "number",
-                      "description": "response code",
+                      "type": "string",
+                      "description": "responses code",
                       "example": "200"
                     },
-                    "data": {
+                    "statistic": {
                       "type": "object",
-                      "description": "response data",
+                      "description": "responses data",
                       "example": {
-                        "expenseStats": [
+                        "monthStatistic": [
                           {
-                            "categoryId": "categoryID_123-456-789",
-                            "amount": 10000
+                            "name": "car",
+                            "count": 2000
                           },
                           {
-                            "categoryId": "...",
-                            "amount": "..."
-                          },
-                          {
-                            "... ": "...",
-                            "....": "..."
+                            "name": "food",
+                            "count": 5000
                           }
                         ],
-                        "expenses": 20000,
-                        "incomes": 30000
+                        "income": [
+                          {
+                            "name": "gifts",
+                            "count": 2000
+                          },
+                          {
+                            "name": "salary",
+                            "count": 5000
+                          }
+                        ]
                       }
                     }
                   }
@@ -1310,29 +830,12 @@
             }
           },
 
-          "401": {
-            "description": "Unauthorized",
+          "500": {
+            "description": "Iternal Server Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "401"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Invalid credentials"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Error500"
                 }
               }
             }
@@ -1341,10 +844,10 @@
       }
     },
 
-    "/api/categories": {
+    "/categories/all": {
       "get": {
         "tags": ["Categories"],
-        "summary": "Get list of transaction categories",
+        "summary": "Get all categories",
         "parameters": [],
         "security": [{ "Bearer": [] }],
         "responses": {
@@ -1357,36 +860,19 @@
                   "properties": {
                     "status": {
                       "type": "string",
-                      "description": "response status",
+                      "description": "responses status",
                       "example": "success"
                     },
                     "code": {
-                      "type": "number",
-                      "description": "response code",
+                      "type": "string",
+                      "description": "responses code",
                       "example": "200"
                     },
                     "data": {
                       "type": "object",
-                      "description": "response data",
+                      "description": "responses data",
                       "example": {
-                        "expenses": [
-                          {
-                            "name": "Категория 1",
-                            "color": "#0088ff",
-                            "isExpense": true,
-                            "id": "categoryid123456789"
-                          },
-                          { "name": "Категория 2", "... ": "..." },
-                          { "... ": "...", "....": "..." }
-                        ],
-                        "incomes": [
-                          {
-                            "name": "Доход",
-                            "color": "",
-                            "isExpense": false,
-                            "id": "categoryid987654321"
-                          }
-                        ]
+                        "categories": []
                       }
                     }
                   }
@@ -1395,29 +881,12 @@
             }
           },
 
-          "401": {
-            "description": "Unauthorized",
+          "500": {
+            "description": "Iternal Server Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "response status",
-                      "example": "error"
-                    },
-                    "code": {
-                      "type": "number",
-                      "description": "response code",
-                      "example": "401"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "response message",
-                      "example": "Invalid credentials"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Error500"
                 }
               }
             }
@@ -1429,46 +898,29 @@
 
   "components": {
     "schemas": {
-      "Error 404": {
-        "description": "Not found",
+      "Error500": {
+        "description": "Iternal Server Error",
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "description": "response status",
-            "example": "error"
-          },
-          "code": {
-            "type": "number",
-            "description": "response code",
-            "example": "404"
-          },
-          "message": {
-            "type": "string",
-            "description": "response message",
-            "example": "Not found"
-          }
-        }
-      },
-
-      "Error 500": {
-        "description": "Internal Server Error",
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "description": "response status",
+            "description": "responses status",
             "example": "fail"
           },
           "code": {
             "type": "string",
-            "description": "response code",
+            "description": "responses code",
             "example": "500"
           },
           "message": {
             "type": "string",
-            "description": "response message",
-            "example": "Internal Server Erro"
+            "description": "responses message",
+            "example": "Something is wrong. Try again later"
+          },
+          "data": {
+            "type": "string",
+            "description": "responses data",
+            "example": "Internal Server Found"
           }
         }
       }

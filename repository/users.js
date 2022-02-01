@@ -18,14 +18,6 @@ const create = async (options) => {
   return await user.save();
 };
 
-const update = async (id, body) => {
-  return await User.findOneAndUpdate({ _id: id }, { ...body }, { new: true });
-};
-
-const updateBalance = async (id, balance) => {
-  return await User.updateOne({ _id: id }, { balance });
-};
-
 const updateToken = async (id, token) => {
   return await User.updateOne({ _id: id }, { token });
 };
@@ -43,8 +35,6 @@ module.exports = {
   findByEmail,
   findUserByVerifyToken,
   create,
-  update,
-  updateBalance,
   updateToken,
   updateTokenVerify,
   updateAvatar,

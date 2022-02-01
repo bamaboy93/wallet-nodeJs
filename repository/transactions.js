@@ -1,283 +1,109 @@
 const Transaction = require("../models/transaction");
-const Users = require("./users");
 
-const listTransactions = async (userId, query) => {
-  const { sortBy = "date", sortByDesc, filter, page = 1, limit = 1e12 } = query;
-  const searchOptions = { owner: userId };
+const { Category } = require("../config/category");
 
-  const results = await Transaction.paginate(searchOptions, {
-    limit,
-    page,
-    sort: {
-      ...(!sortBy && !sortByDesc ? { date: 1 } : {}),
-
-      ...(sortBy
-        ? sortBy.split`|`.reduce((acc, item) => ({ ...acc, [item]: 1 }), {})
-        : {}),
-
-      ...(sortByDesc
-        ? sortByDesc.split`|`.reduce(
-            (acc, item) => ({ ...acc, [item]: -1 }),
-            {}
-          )
-        : {}),
-
-      ...(!sortBy?.includes("createdAt") && !sortByDesc?.includes("createdAt")
-        ? { createdAt: 1 }
-        : {}),
-    },
-    select: filter ? filter.split("|").join("") : "",
-    populate: {
-      path: "category",
-      select: "name color",
-    },
-  });
-
-  const allTransactions = await Transaction.find({ owner: userId });
-  const years = [...new Set(allTransactions.map(({ year }) => year))].sort();
-
-  const { docs: transactions, ...pageInfo } = results;
-
-  return { pageInfo, transactions, years };
+const getAllTransactions = async (userId) => {
+  return await Transaction.find({ owner: userId });
 };
 
-const getTransactionById = async (id, userId) => {
-  const result = await Transaction.findOne({ _id: id, owner: userId }).populate(
-    { path: "owner", select: "name email createdAt updatedAt" }
-  );
-
-  return result;
+const getStatistics = async (userId, month, year) => {
+  return await Transaction.find({ owner: userId, month: month, year: year });
 };
 
-const removeTransaction = async (transactionId, userId) => {
-  const transactionToDelete = await Transaction.findOne({
-    _id: transactionId,
-    owner: userId,
-  });
-  if (!transactionToDelete) return null;
-
-  const { date, createdAt, amount, isExpense } = transactionToDelete;
-
-  const { transactions } = await listTransactions(userId, {});
-  const lastTransaction = findLastTransaction(transactions);
-  const laterTransactions = findLaterTransactions(
-    transactions,
-    date,
-    createdAt
-  );
-
-  const amountChange = -1 * amount * (isExpense ? -1 : 1);
-
-  const deletedTransaction = await Transaction.findByIdAndRemove(transactionId);
-  await updateBalanceForTransactions(laterTransactions, amountChange);
-
-  const newUserBalance = (lastTransaction?.balanceAfter || 0) + amountChange;
-  await Users.updateBalance(userId, newUserBalance);
-
-  const { transactions: updatedTransactions, pageInfo } =
-    await listTransactions(userId, query);
-
-  return {
-    newBalance: newUserBalance,
-    transactions: updatedTransactions,
-    deletedTransaction,
-    pageInfo,
+const getStatisticsByCategories = (arrayTransactions) => {
+  const sumCategories = {
+    main: 0,
+    food: 0,
+    car: 0,
+    beauty: 0,
+    children: 0,
+    house: 0,
+    education: 0,
+    health: 0,
+    other: 0,
+    incomes: 0,
   };
+
+  Category.expenses.forEach((categoryExp) => {
+    arrayTransactions.forEach((item) => {
+      if (item.category === categoryExp) {
+        sumCategories[categoryExp] += item.amount;
+      }
+    });
+  });
+
+  arrayTransactions.forEach((item) => {
+    if (item.type === "incomes") {
+      sumCategories.incomes += item.amount;
+    }
+  });
+
+  return sumCategories;
 };
 
+let incomesSum = 0;
+let expensesSum = 0;
 const addTransaction = async (body) => {
-  const { owner: userId, date, amount, isExpense } = details;
+  const { type } = body;
+  const amount = +body.amount;
 
-  const { transactions } = await listTransactions(userId, {});
-  const lastTransaction = findLastTransaction(transactions);
-  const latestPrevTransaction = findLatestPrevTransaction(transactions, date);
-  const laterTransactions = findLaterTransactions(transactions, date);
+  const incomes = await Transaction.find({
+    type: "incomes",
+    owner: body.owner,
+  });
+  const expenses = await Transaction.find({
+    type: "expenses",
+    owner: body.owner,
+  });
 
-  const amountChange = amount * (isExpense ? -1 : 1);
+  if (incomes.length === 0 && expenses.length === 0) {
+    incomesSum = 0;
+    expensesSum = 0;
+  }
 
-  details.balanceAfter =
-    (latestPrevTransaction?.balanceAfter || 0) + amountChange;
+  if (type === "incomes" && incomes.length > 0) {
+    const { incomesBalance } = incomes[incomes.length - 1];
+    body.incomesBalance = incomesBalance + amount;
+    incomes[incomes.length - 1].incomesBalance = incomesBalance + amount;
+    incomesSum = incomes[incomes.length - 1].incomesBalance;
+  } else if (type === "expenses" && expenses.length > 0) {
+    const { expensesBalance } = expenses[expenses.length - 1];
+    body.expensesBalance = expensesBalance + amount;
+    expenses[expenses.length - 1].expensesBalance = expensesBalance + amount;
+    expensesSum = expenses[expenses.length - 1].expensesBalance;
+  } else if (type === "incomes" && incomes.length === 0) {
+    body.incomesBalance = amount;
+    incomesSum = amount;
+  } else if (type === "expenses" && expenses.length === 0) {
+    body.expensesBalance = amount;
+    expensesSum = amount;
+  }
 
-  await Transaction.create(details);
-  await updateBalanceForTransactions(laterTransactions, amountChange);
+  body.balance = incomesSum - expensesSum;
 
-  const newUserBalance = (lastTransaction?.balanceAfter || 0) + amountChange;
-  await Users.updateBalance(userId, newUserBalance);
-
-  const { transactions: updatedTransactions, pageInfo } =
-    await listTransactions(userId, query);
-
-  return {
-    newBalance: newUserBalance,
-    transactions: updatedTransactions,
-    pageInfo,
-  };
+  return await Transaction.create(body);
 };
 
-const updateTransaction = async (transactionId, body, userId, query) => {
-  const transactionToUpdate = await Transaction.findOne({
-    _id: transactionId,
-    owner: userId,
-  });
-  if (!transactionToUpdate) return null;
-
-  const { date, createdAt } = transactionToUpdate;
-
-  const { transactions } = await listTransactions(userId, {});
-  const lastTransaction = findLastTransaction(transactions);
-  const laterTransactions = findLaterTransactions(
-    transactions,
-    date,
-    createdAt
-  );
-  laterTransactions.push(transactionToUpdate);
-
-  const updatedTransaction = await Transaction.findOneAndUpdate(
+const editTransaction = async (transactionId, body, userId) => {
+  return await Transaction.findOneAndUpdate(
     { _id: transactionId, owner: userId },
     { ...body },
     { new: true }
   );
-
-  const { amount, isExpense } = transactionToUpdate;
-  const { amount: NewAmount, isExpense: newIsExpense } = updatedTransaction;
-  const oldAmount = amount * (isExpense ? -1 : 1);
-  const newAmount = NewAmount * (newIsExpense ? -1 : 1);
-  const amountChange = newAmount - oldAmount;
-
-  const newUserBalance = (lastTransaction?.balanceAfter || 0) + amountChange;
-
-  if (amountChange) {
-    await updateBalanceForTransactions(laterTransactions, amountChange);
-    await Users.updateBalance(userId, newUserBalance);
-  }
-
-  const { transactions: updatedTransactions, pageInfo } =
-    await listTransactions(userId, query);
-
-  return {
-    newBalance: newUserBalance,
-    updatedTransaction,
-    transactions: updatedTransactions,
-    pageInfo,
-  };
 };
 
-const listTransactionStats = async (userId, month, year) => {
-  const allTransactions = await Transaction.find({
+const deleteTransaction = async (transactionId, userId) => {
+  return await Transaction.findOneAndRemove({
+    _id: transactionId,
     owner: userId,
-    month,
-    year,
   });
-
-  const stats1 = allTransactions.reduce((acc, { category, amount }) => {
-    const id = category.toString();
-
-    return {
-      ...acc,
-      [id]: acc[id] ? acc[id] + amount : amount,
-    };
-  }, {});
-
-  const stats = await Transaction.aggregate([
-    {
-      $match: {
-        $and: [
-          {
-            owner: mongoose.Types.ObjectId(userId),
-            month,
-            year,
-          },
-        ],
-      },
-    },
-
-    {
-      $group: {
-        _id: "$category",
-        amount: { $sum: "$amount" },
-      },
-    },
-
-    {
-      $project: {
-        _id: 0,
-        categoryId: "$_id",
-        amount: 1,
-      },
-    },
-  ]);
-
-  const result = stats.reduce(
-    (acc, { categoryId, amount }) => ({
-      ...acc,
-      [categoryId]: amount,
-    }),
-    {}
-  );
-
-  console.log(result);
-  console.log(stats1);
-
-  return result;
-};
-
-const updateBalanceForTransactions = async (transactions, amount) => {
-  await transactions.forEach(async ({ _id, balanceAfter }) => {
-    await Transaction.findOneAndUpdate(
-      { _id },
-      { balanceAfter: balanceAfter + amount }
-    );
-  });
-};
-
-const findLastTransaction = (transactions) => {
-  return transactions.reduce(
-    (acc, transaction) =>
-      transaction.date > acc.date ||
-      (transaction.date >= acc.date && transaction.createdAt > acc.createdAt)
-        ? transaction
-        : acc,
-    { date: 0, createdAt: 0 }
-  );
-};
-
-const findLatestPrevTransaction = (
-  transactions,
-  date,
-  createdAt = new Date()
-) => {
-  date = new Date(date);
-  createdAt = new Date(createdAt);
-
-  return transactions.reduce(
-    (acc, transaction) =>
-      transaction.date > date ||
-      (transaction.date >= date && transaction.createdAt > createdAt) ||
-      transaction.date < acc.date ||
-      (transaction.date <= acc.date && transaction.createdAt < acc.createdAt)
-        ? acc
-        : transaction,
-    { date: 0, createdAt: 0 }
-  );
-};
-
-const findLaterTransactions = (transactions, date, createdAt = new Date()) => {
-  date = new Date(date);
-  createdAt = new Date(createdAt);
-
-  return transactions.filter(
-    (transaction) =>
-      transaction.date > date ||
-      (transaction.date >= date && transaction.createdAt > createdAt)
-  );
 };
 
 module.exports = {
-  listTransactions,
-  getTransactionById,
-  removeTransaction,
+  getStatistics,
+  getAllTransactions,
   addTransaction,
-  updateTransaction,
-  listTransactionStats,
-  updateBalanceForTransactions,
+  editTransaction,
+  deleteTransaction,
+  getStatisticsByCategories,
 };

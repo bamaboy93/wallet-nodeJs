@@ -1,21 +1,19 @@
 const Joi = require("joi");
 const { HttpCode } = require("../../config/constants");
 
-const schemaMakeTransaction = Joi.object({
-  date: Joi.date().required(),
-  category: Joi.string()
-    .pattern(/^[\da-f]{24}$/)
-    .required(),
-  comment: Joi.string().required(),
-  amount: Joi.number().required(),
+const shemaTransactionAdd = Joi.object({
+  type: Joi.string.required(),
+  amount: Joi.number.min(0).required(),
+  date: Joi.date().format("YYYY-MM-DD").required(),
+  comment: Joi.string().optional(),
+  category: Joi.string().required(),
 });
 
-const validate = async (schema, obj, res, next) => {
+const validate = async (schema, req, next) => {
   try {
-    await schema.validateAsync(obj);
+    await schema.validateAsync(req);
     next();
   } catch (err) {
-    console.log(err);
     res.status(HttpCode.BAD_REQUEST).json({
       status: "error",
       code: HttpCode.BAD_REQUEST,
@@ -24,6 +22,6 @@ const validate = async (schema, obj, res, next) => {
   }
 };
 
-module.exports.validateMakeTransaction = async (req, res, next) => {
-  return await validate(schemaMakeTransaction, req.body, res, next);
+module.exports.validateTransactionAdd = async (req, res, next) => {
+  return validate(shemaTransactionAdd, req.body, next);
 };

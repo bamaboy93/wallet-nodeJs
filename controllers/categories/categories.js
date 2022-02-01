@@ -1,20 +1,24 @@
 const Categories = require("../../repository/categories");
+const { HttpCode } = require("../config/constants");
 
-const { HttpCode, ResponseStatus } = require("../../config/constants");
+const getAllCategories = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const categories = await Categories.getAllCategories({
+      ...req.body,
+      owner: userId,
+    });
 
-const getCategories = async (req, res) => {
-  const data = await Categories.listCategories();
-
-  const outcomes = data.filter(({ isExpense }) => isExpense);
-  const incomes = data.filter(({ isExpense }) => !isExpense);
-
-  res.status(HttpCode.OK).json({
-    status: ResponseStatus.SUCCESS,
-    code: HttpCode.OK,
-    data: { outcomes, incomes },
-  });
+    return res.status(HttpCode.CREATED).json({
+      status: "success",
+      code: HttpCode.OK,
+      data: { categories: categories },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
-  getCategories,
+  getAllCategories,
 };

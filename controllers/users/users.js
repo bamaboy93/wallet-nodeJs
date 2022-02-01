@@ -149,23 +149,16 @@ const repeatEmailForVerifyUser = async (req, res, next) => {
   });
 };
 
-const updateUser = async (req, res) => {
+const current = async (req, res) => {
   const userId = req.user._id;
-
-  if (req.body.email && req.body.email !== req.user.email) {
-    const userWithEmail = await Users.findByEmail(req.body.email);
-
-    if (userWithEmail)
-      throw new CustomError(HttpCode.CONFLICT, "Email already in use");
-  }
-
-  const user = await Users.update(userId, req.body);
-
+  const user = await Users.findById(userId);
   if (user) {
     return res.status(HttpCode.OK).json({
       status: "success",
       code: HttpCode.OK,
+      message: "Current user",
       data: {
+        id: user.id,
         email: user.email,
         name: user.name,
         balance: user.balance,
@@ -173,6 +166,7 @@ const updateUser = async (req, res) => {
       },
     });
   }
+  throw new CustomError(HttpCode.NOT_FOUND, "Not Found");
 };
 
 // const loginByGoogle = async (req, res) => {
@@ -206,6 +200,7 @@ module.exports = {
   uploadAvatar,
   verifyUser,
   repeatEmailForVerifyUser,
-  updateUser,
+  current,
+
   // loginByGoogle,
 };
