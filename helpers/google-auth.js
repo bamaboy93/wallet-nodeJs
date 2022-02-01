@@ -19,7 +19,7 @@ passport.use(
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL: `${LINK}`,
-      scope: ["profile"],
+      scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
       const email = profile._json.email;
