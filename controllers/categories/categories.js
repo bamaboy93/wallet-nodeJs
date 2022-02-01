@@ -1,5 +1,5 @@
 const Categories = require("../../repository/categories");
-const { HttpCode } = require("../config/constants");
+const { HttpCode } = require("../../config/constants");
 
 const getAllCategories = async (req, res, next) => {
   try {

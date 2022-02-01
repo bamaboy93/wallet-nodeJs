@@ -18,4 +18,19 @@ const ResponseStatus = {
   FAIL: "fail",
 };
 
-module.exports = { HttpCode, ResponseStatus };
+const Category = {
+  expenses: [
+    "main",
+    "food",
+    "car",
+    "me",
+    "children",
+    "house",
+    "education",
+    "leisure",
+    "other",
+  ],
+  incomes: ["incomes"],
+};
+
+module.exports = { HttpCode, ResponseStatus, Category };

@@ -9,12 +9,12 @@ const {
   verifyUser,
   repeatEmailForVerifyUser,
   current,
-  // loginByGoogle,
+  loginByGoogle,
 } = require("../../controllers/users/users");
 const {
   validateRegistration,
   validateLogin,
-  validateUserPatch,
+  validateLoginByGoogle,
 } = require("./validation");
 
 require("dotenv").config();
@@ -26,9 +26,9 @@ const wrapError = require("../../helpers/errorHandler");
 
 router.post("/signup", validateRegistration, wrapError(signUp));
 router.post("/signin", validateLogin, loginLimit, wrapError(signIn));
-// router.post("/loginByGoogle", validateLoginByGoogle, wrapError(loginByGoogle));
+router.post("/loginByGoogle", validateLoginByGoogle, wrapError(loginByGoogle));
 router.post("/signout", guard, wrapError(signOut));
-router.patch("/", guard, validateUserPatch, wrapError(updateUser));
+
 router.patch(
   "/avatar",
   guard,
@@ -39,13 +39,13 @@ router.get("/current", guard, wrapError(current));
 router.get("/verify/:token", wrapError(verifyUser));
 router.post("/verify", repeatEmailForVerifyUser);
 
-// router.get(
-//   "/google",
-//   passport.authenticate("google", { scope: ["profile", "email"] })
-// );
-// router.get("/google/callback", passport.authenticate("google"), (req, res) => {
-//   const token = req.user.token;
-//   res.redirect(`${process.env.LINK}?token=${token}`);
-// });
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+router.get("/google/callback", passport.authenticate("google"), (req, res) => {
+  const token = req.user.token;
+  res.redirect(`${process.env.LINK}?token=${token}`);
+});
 
 module.exports = router;

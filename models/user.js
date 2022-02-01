@@ -44,7 +44,7 @@ const userSchema = new Schema(
 
     verifyTokenEmail: {
       type: String,
-      required: [true, "Verify token is required"],
+      // required: [true, "Verify token is required"],
       default: crypto.randomUUID(),
     },
   },

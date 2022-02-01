@@ -1,6 +1,6 @@
 const Transaction = require("../models/transaction");
 
-const { Category } = require("../config/category");
+const { Category } = require("../config/constants");
 
 const getAllTransactions = async (userId) => {
   return await Transaction.find({ owner: userId });

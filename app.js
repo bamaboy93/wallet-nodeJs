@@ -4,6 +4,7 @@ const cors = require("cors");
 const passport = require("passport");
 const helmet = require("helmet");
 const boolParser = require("express-query-boolean");
+const path = require("path");
 require("dotenv").config();
 require("./helpers/google-auth");
 

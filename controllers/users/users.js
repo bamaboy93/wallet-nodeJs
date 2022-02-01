@@ -74,6 +74,30 @@ const signIn = async (req, res, next) => {
   });
 };
 
+const loginByGoogle = async (req, res) => {
+  const { token } = req.body;
+  const { id } = jwt.verify(token, SECRET_KEY);
+
+  const user = await Users.findById(id);
+
+  if (!user || user.token !== token)
+    throw new CustomError(HttpCode.UNAUTHORIZED, "Invalid credentials");
+
+  const { name, balance, avatar, email } = user;
+
+  return res.status(HttpCode.OK).json({
+    status: "success",
+    code: HttpCode.OK,
+    data: {
+      email,
+      name,
+      balance,
+      token,
+      avatar,
+    },
+  });
+};
+
 const signOut = async (req, res, next) => {
   const id = req.user._id;
   await Users.updateToken(id, null);
@@ -169,30 +193,6 @@ const current = async (req, res) => {
   throw new CustomError(HttpCode.NOT_FOUND, "Not Found");
 };
 
-// const loginByGoogle = async (req, res) => {
-//   const { token } = req.body;
-//   const { id } = jwt.verify(token, SECRET_KEY);
-
-//   const user = await Users.findById(id);
-
-//   if (!user || user.token !== token)
-//     throw new CustomError(HttpCode.UNAUTHORIZED, "Invalid credentials");
-
-//   const { name, balance, avatar, email } = user;
-
-//   return res.status(HttpCode.OK).json({
-//     status: "success",
-//     code: HttpCode.OK,
-//     data: {
-//       email,
-//       name,
-//       balance,
-//       token,
-//       avatar,
-//     },
-//   });
-// };
-
 module.exports = {
   signUp,
   signIn,
@@ -201,6 +201,5 @@ module.exports = {
   verifyUser,
   repeatEmailForVerifyUser,
   current,
-
-  // loginByGoogle,
+  loginByGoogle,
 };
